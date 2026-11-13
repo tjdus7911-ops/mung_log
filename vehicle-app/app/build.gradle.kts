@@ -51,7 +51,12 @@ android {
     kotlinOptions { jvmTarget = "17" }
     // AAOS Car API(CarPropertyManager·CarUxRestrictionsManager). 휴대폰 에뮬레이터에는 없을 수 있어 required=false
     useLibrary("android.car")
-    testOptions { unitTests.isReturnDefaultValues = true }
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+        // 화면 스크린샷 테스트(Robolectric + Roborazzi): 리소스·폰트 포함
+        unitTests.isIncludeAndroidResources = true
+        unitTests.all { it.systemProperty("roborazzi.test.record", "true") }
+    }
 }
 
 dependencies {
@@ -75,5 +80,11 @@ dependencies {
     }
 
     testImplementation("junit:junit:4.13.2")
+    // 시안 비교용 화면 스크린샷(1600×900) — 앱 동작에는 포함되지 않음
+    testImplementation("org.robolectric:robolectric:4.14.1")
+    testImplementation("io.github.takahirom.roborazzi:roborazzi:1.32.2")
+    testImplementation("io.github.takahirom.roborazzi:roborazzi-compose:1.32.2")
+    testImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
 }

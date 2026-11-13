@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -44,7 +45,13 @@ import androidx.compose.ui.unit.sp
 import com.mungroad.car.data.Place
 import com.mungroad.car.data.Verification
 import com.mungroad.car.ui.Menu
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Brush
+import com.mungroad.car.ui.theme.BlueCta
 import com.mungroad.car.ui.theme.C
+import com.mungroad.car.ui.theme.Glass
+import com.mungroad.car.ui.theme.GlassShadow
+import com.mungroad.car.ui.theme.glass
 import com.mungroad.car.ui.theme.T
 import com.mungroad.car.ui.theme.sceneBrush
 
@@ -52,10 +59,8 @@ import com.mungroad.car.ui.theme.sceneBrush
 fun Card(modifier: Modifier = Modifier, padding: Dp = 28.dp, color: Color = C.Card, border: Color? = null, content: @Composable ColumnScope.() -> Unit) {
     Column(
         modifier
-            .shadow(10.dp, RoundedCornerShape(28.dp), ambientColor = Color(0x223D2914), spotColor = Color(0x223D2914))
-            .clip(RoundedCornerShape(28.dp))
-            .background(color)
-            .then(if (border != null) Modifier.border(2.dp, border, RoundedCornerShape(28.dp)) else Modifier)
+            .then(if (color == C.Card) Modifier.glass(Glass.Regular, 24.dp) else Modifier.shadow(10.dp, RoundedCornerShape(24.dp), ambientColor = GlassShadow, spotColor = GlassShadow).clip(RoundedCornerShape(24.dp)).background(color))
+            .then(if (border != null) Modifier.border(2.dp, border, RoundedCornerShape(24.dp)) else Modifier)
             .padding(padding),
         content = content,
     )
@@ -77,9 +82,10 @@ fun PrimaryButton(text: String, modifier: Modifier = Modifier, icon: ImageVector
     Row(
         modifier
             .height(height)
-            .shadow(8.dp, RoundedCornerShape(height / 2), spotColor = C.Orange.copy(alpha = 0.4f))
+            .shadow(12.dp, RoundedCornerShape(height / 2), ambientColor = C.Orange.copy(alpha = 0.35f), spotColor = C.Orange.copy(alpha = 0.45f))
             .clip(RoundedCornerShape(height / 2))
-            .background(C.Orange)
+            .background(BlueCta)
+            .background(Brush.verticalGradient(0f to Color(0x40FFFFFF), 0.5f to Color(0x00FFFFFF)))
             .clickable(onClick = onClick)
             .padding(horizontal = 28.dp),
         horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
@@ -94,9 +100,7 @@ fun SecondaryButton(text: String, modifier: Modifier = Modifier, icon: ImageVect
     Row(
         modifier
             .height(height)
-            .clip(RoundedCornerShape(height / 2))
-            .background(C.Card)
-            .border(BorderStroke(1.5.dp, C.Divider), RoundedCornerShape(height / 2))
+            .glass(Glass.Regular, height / 2)
             .clickable(onClick = onClick)
             .padding(horizontal = 24.dp),
         horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
@@ -111,15 +115,13 @@ fun Chip(text: String, icon: ImageVector?, selected: Boolean, onClick: () -> Uni
     Row(
         Modifier
             .height(52.dp)
-            .clip(CircleShape)
-            .background(if (selected) C.Orange else C.Card)
-            .then(if (selected) Modifier else Modifier.border(1.5.dp, C.Divider, CircleShape))
+            .then(if (selected) Modifier.shadow(8.dp, CircleShape, ambientColor = C.Orange.copy(alpha = 0.35f), spotColor = C.Orange.copy(alpha = 0.4f)).clip(CircleShape).background(BlueCta) else Modifier.glass(Glass.Regular, 26.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 18.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (icon != null) { Icon(icon, null, tint = if (selected) Color.White else C.Ink, modifier = Modifier.size(22.dp)); Spacer(Modifier.width(6.dp)) }
-        Text(text, fontSize = 20.sp, fontWeight = FontWeight.Medium, color = if (selected) Color.White else C.Ink)
+        Text(text, fontSize = 20.sp, fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium, color = if (selected) Color.White else C.Ink)
     }
 }
 
@@ -162,7 +164,7 @@ fun Scene(key: String, modifier: Modifier = Modifier, radius: Dp = 18.dp, label:
 @Composable
 fun RoundIconButton(icon: ImageVector, size: Dp = 64.dp, onClick: () -> Unit) {
     Box(
-        Modifier.size(size).shadow(6.dp, CircleShape).clip(CircleShape).background(C.Card).border(1.5.dp, C.Divider, CircleShape).clickable(onClick = onClick),
+        Modifier.size(size).glass(Glass.Strong, size / 2).clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) { Icon(icon, null, tint = C.Ink, modifier = Modifier.size(size * 0.45f)) }
 }
@@ -177,36 +179,48 @@ private fun menuIcon(m: Menu): ImageVector = when (m) {
 
 @Composable
 fun Sidebar(active: Menu, locked: Boolean, onSelect: (Menu) -> Unit) {
-    Column(Modifier.width(160.dp).fillMaxSize().padding(vertical = 120.dp, horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+    // 시안: 왼쪽 세로 유리 레일 · 위쪽 로고 · 선택 메뉴만 유리 필 강조
+    Column(
+        Modifier.width(149.dp).fillMaxHeight()
+            .background(Brush.horizontalGradient(listOf(Color(0x8CFFFFFF), Color(0x59F3F8FF))))
+            .background(Brush.verticalGradient(0f to Color(0x4DFFFFFF), 0.3f to Color(0x00FFFFFF)))
+            .drawBehind { drawLine(Color(0xB3FFFFFF), androidx.compose.ui.geometry.Offset(size.width - 1f, 0f), androidx.compose.ui.geometry.Offset(size.width - 1f, size.height), 2f) }
+            .padding(top = 42.dp, start = 21.dp, end = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Box(
+            Modifier.size(64.dp).shadow(14.dp, RoundedCornerShape(18.dp), ambientColor = C.Orange.copy(alpha = 0.4f), spotColor = C.Orange.copy(alpha = 0.5f))
+                .clip(RoundedCornerShape(18.dp)).background(Brush.linearGradient(listOf(Color(0xFF6CB0FF), Color(0xFF2F6FED))))
+                .border(1.dp, Color(0x99FFFFFF), RoundedCornerShape(18.dp)),
+            contentAlignment = Alignment.Center,
+        ) { Icon(Icons.Outlined.Pets, null, tint = Color.White, modifier = Modifier.size(34.dp)) }
+        Spacer(Modifier.height(53.dp))
         Menu.entries.forEach { m ->
             val on = m == active
             val dim = locked && m != Menu.HOME
             Column(
                 Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(28.dp))
-                    .background(if (on) C.OrangeSoft else Color.Transparent)
-                    .then(if (on) Modifier.border(1.5.dp, C.Orange.copy(alpha = 0.35f), RoundedCornerShape(28.dp)) else Modifier)
-                    .clickable { onSelect(m) }
-                    .padding(vertical = 18.dp),
+                    .width(118.dp).height(92.dp)
+                    .then(if (on) Modifier.glass(Glass.Strong, 22.dp) else Modifier.clip(RoundedCornerShape(22.dp)))
+                    .clickable { onSelect(m) },
                 horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
             ) {
-                Icon(menuIcon(m), null, tint = if (on) C.Orange else if (dim) C.Divider else C.Sub, modifier = Modifier.size(40.dp))
-                Spacer(Modifier.height(8.dp))
-                Text(m.label, fontSize = 18.sp, fontWeight = if (on) FontWeight.Bold else FontWeight.Medium, color = if (on) C.Orange else if (dim) C.Tertiary else C.Sub)
+                Icon(menuIcon(m), null, tint = if (on) C.Orange else if (dim) C.Divider else C.Ink.copy(alpha = 0.85f), modifier = Modifier.size(32.dp))
+                Spacer(Modifier.height(6.dp))
+                Text(m.label, fontSize = 18.sp, fontWeight = if (on) FontWeight.Bold else FontWeight.Medium, color = if (on) C.Orange else if (dim) C.Tertiary else C.Ink.copy(alpha = 0.85f))
             }
+            Spacer(Modifier.height(18.dp))
         }
     }
 }
 
 @Composable
 fun AppHeader(outsideTemp: Float?, status: String? = null, onBack: (() -> Unit)? = null, backLabel: String? = null) {
-    Row(Modifier.fillMaxWidth().height(80.dp).padding(end = 32.dp), verticalAlignment = Alignment.CenterVertically) {
-        Icon(Icons.Outlined.Pets, null, tint = C.Orange, modifier = Modifier.size(38.dp))
-        Spacer(Modifier.width(10.dp))
-        Text("멍로드", fontSize = 32.sp, fontWeight = FontWeight.Black, color = C.Ink)
-        Box(Modifier.padding(horizontal = 18.dp).width(2.dp).height(24.dp).background(C.Divider))
-        Text("반려견과 떠나는 모든 길", style = T.Body.copy(color = C.Sub))
+    Row(Modifier.fillMaxWidth().height(112.dp).padding(start = 38.dp, end = 50.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text("멍로드", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.6).sp, color = C.Ink)
+        Spacer(Modifier.width(16.dp))
+        Text("반려견과 떠나는 모든 길", style = T.Caption.copy(fontSize = 19.sp, color = C.Sub))
         if (onBack != null) {
             Spacer(Modifier.width(32.dp))
             Row(Modifier.clip(CircleShape).clickable(onClick = onBack).padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -221,9 +235,11 @@ fun AppHeader(outsideTemp: Float?, status: String? = null, onBack: (() -> Unit)?
         }
         // 시간·통신 상태는 Pleos 시스템 상태바가 표시 → 앱은 바깥 기온만(ENV_OUTSIDE_TEMPERATURE)
         if (outsideTemp != null) {
-            Icon(Icons.Outlined.Cloud, null, tint = C.Sub, modifier = Modifier.size(30.dp))
+            Icon(Icons.Outlined.Cloud, null, tint = C.Ink, modifier = Modifier.size(30.dp))
+            Spacer(Modifier.width(10.dp))
+            Text("${outsideTemp.toInt()}°", style = T.Title.copy(fontSize = 24.sp))
             Spacer(Modifier.width(8.dp))
-            Text("${outsideTemp.toInt()}°C", style = T.Title)
+            Text("바깥", style = T.Caption.copy(color = C.Sub))
         }
     }
 }

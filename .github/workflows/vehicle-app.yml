@@ -8,6 +8,8 @@ on:
   pull_request:
     paths: ['vehicle-app/**']
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -30,6 +32,23 @@ jobs:
             vehicle-app/app/build/outputs/apk/debug/*.apk
             vehicle-app/app/build/reports/tests/
           if-no-files-found: warn
+      # 시안 비교용 스크린샷(Robolectric) → ci-screenshots 브랜치에 저장(앱 코드와 분리)
+      - name: Publish screenshots
+        if: always()
+        working-directory: .
+        run: |
+          shopt -s nullglob
+          files=(vehicle-app/app/build/outputs/roborazzi/*.png)
+          [ ${#files[@]} -eq 0 ] && { echo "no screenshots"; exit 0; }
+          mkdir -p /tmp/shots && cp "${files[@]}" /tmp/shots/
+          git config user.name "github-actions"; git config user.email "actions@github.com"
+          git fetch origin ci-screenshots || true
+          git switch --orphan ci-screenshots-tmp
+          git rm -rf --quiet . || true
+          mkdir -p vehicle && cp /tmp/shots/*.png vehicle/
+          echo "${GITHUB_SHA}" > vehicle/SOURCE_SHA
+          git add vehicle && git commit -m "screenshots ${GITHUB_SHA::7}"
+          git push -f origin ci-screenshots-tmp:ci-screenshots
 
   build-pleos:
     runs-on: ubuntu-latest

@@ -85,7 +85,7 @@ object SampleData {
     val courses = listOf(gangneungCourse, yangpyeongCourse)
 
     val trips = listOf(
-        Trip("t-1", "사슴이와 강릉 바다", "11월 15일 (토)", "집", gyeongpo, listOf(okgye, bakery), listOf(saseumi.id)),
+        Trip("t-1", "사슴이와 강릉 바다", "11월 15일 (토)", "집", gyeongpo, listOf(okgye, bakery), listOf(saseumi.id), startDate = "2026-11-15"),
         Trip("t-2", "양평 숲 나들이", "11월 22일 (토)", "집", pinePark, emptyList(), listOf(saseumi.id)),
     )
 }

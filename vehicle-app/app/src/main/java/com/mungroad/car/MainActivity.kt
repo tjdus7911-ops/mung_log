@@ -58,6 +58,7 @@ import com.mungroad.car.ui.screens.TripConfirmScreen
 import com.mungroad.car.ui.screens.TripsScreen
 import com.mungroad.car.ui.screens.WrapUpScreen
 import com.mungroad.car.ui.theme.C
+import com.mungroad.car.ui.theme.GlassBackground
 import com.mungroad.car.ui.theme.MungRoadTheme
 import com.mungroad.car.vehicle.IntegrationLog
 
@@ -100,7 +101,7 @@ private fun App(vm: AppViewModel) {
         }
     }
 
-    Box(Modifier.fillMaxSize().background(C.Cream)) {
+    GlassBackground(Modifier.fillMaxSize()) {
         Row(Modifier.fillMaxSize()) {
             val full = u.screen is Screen.Drive
             if (!full) Sidebar(u.menu, vm.isDriving()) { vm.select(it) }

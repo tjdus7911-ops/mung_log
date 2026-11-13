@@ -64,6 +64,18 @@ import com.mungroad.car.ui.components.RoundIconButton
 import com.mungroad.car.ui.components.Scene
 import com.mungroad.car.ui.components.SecondaryButton
 import com.mungroad.car.ui.components.SectionTitle
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.Image
+import androidx.compose.ui.BiasAlignment
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.mungroad.car.R
+import com.mungroad.car.ui.theme.BlueCta
+import com.mungroad.car.ui.theme.Glass
+import com.mungroad.car.ui.theme.GlassShadow
+import com.mungroad.car.ui.theme.glass
 import com.mungroad.car.ui.theme.C
 import com.mungroad.car.ui.theme.T
 import kotlin.math.roundToInt
@@ -85,86 +97,187 @@ fun distanceText(p: Place): String {
     return "${"%.1f".format(km)}km · ${min}분"
 }
 
-// ───────────────────────────── 홈 (WF-C01 / D-C01) ─────────────────────────────
+// ───────────────────────────── 홈 (WF-C01 / 최종 시안 2026-11-13 · 블루 글래스) ─────────────────────────────
 @Composable
 fun HomeScreen(u: UiState, vm: AppViewModel) {
-    Row(Modifier.fillMaxSize().padding(end = 24.dp, bottom = 24.dp), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-        Column(Modifier.weight(1.29f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(20.dp)) {
-            // 히어로
-            Box(Modifier.fillMaxWidth().weight(0.47f).shadow(10.dp, RoundedCornerShape(28.dp)).clip(RoundedCornerShape(28.dp)).background(Brush.horizontalGradient(listOf(Color(0xFFFBF6EF), Color(0xFFF8DDBB), Color(0xFFEBA765))))) {
-                Icon(Icons.Outlined.Pets, null, tint = Color.White.copy(alpha = 0.55f), modifier = Modifier.align(Alignment.CenterEnd).padding(end = 48.dp).size(220.dp))
-                Column(Modifier.padding(44.dp)) {
-                    Text("오늘은\n어디로 떠날까요?", style = T.Display)
-                    Spacer(Modifier.height(28.dp))
-                    Row(
-                        Modifier.shadow(8.dp, CircleShape).clip(CircleShape).background(C.Card).clickable { vm.select(com.mungroad.car.ui.Menu.COURSE) }.padding(horizontal = 26.dp, vertical = 18.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(Icons.Outlined.Search, null, tint = C.Ink, modifier = Modifier.size(28.dp))
-                        Spacer(Modifier.width(12.dp))
-                        Text("반려견 동반 코스 찾기", style = T.Title)
-                        Spacer(Modifier.width(24.dp))
-                        Icon(Icons.Outlined.ArrowForward, null, tint = C.Ink, modifier = Modifier.size(28.dp))
-                    }
-                }
-            }
-            // 지금, 반려견과 가기 좋은 곳
-            Card(Modifier.fillMaxWidth().weight(0.53f), padding = 26.dp) {
-                SectionTitle(Icons.Outlined.Place, "지금, 반려견과 가기 좋은 곳", "멍스팟") { vm.select(com.mungroad.car.ui.Menu.SPOT) }
-                Spacer(Modifier.height(14.dp))
-                CategoryRow(u.category) { vm.setCategory(it) }
-                Spacer(Modifier.height(14.dp))
-                val list = SampleData.nearby.filter { u.category == Category.ALL || it.category == u.category }.take(2)
-                if (list.isEmpty()) Text("이 카테고리는 주변에 없어요. 다른 카테고리를 골라 보세요.", style = T.Body.copy(color = C.Sub), modifier = Modifier.padding(16.dp))
-                list.forEach { p -> PlaceRow(p, onOpen = { vm.openPlace(p) }, onGo = { vm.startRoute(p) }); Spacer(Modifier.height(10.dp)) }
+    Row(Modifier.fillMaxSize().padding(start = 30.dp, end = 36.dp, bottom = 30.dp), horizontalArrangement = Arrangement.spacedBy(21.dp)) {
+        // 왼쪽: 히어로(425) → 주변 장소
+        Column(Modifier.weight(887f).fillMaxHeight()) {
+            HomeHero(u, onSearch = { vm.select(com.mungroad.car.ui.Menu.COURSE) })
+            Spacer(Modifier.height(25.dp))
+            HomeSectionTitle("지금, 반려견과 가기 좋은 곳", "멍스팟 전체") { vm.select(com.mungroad.car.ui.Menu.SPOT) }
+            Spacer(Modifier.height(17.dp))
+            CategoryRow(u.category) { vm.setCategory(it) }
+            Spacer(Modifier.height(12.dp))
+            val list = SampleData.nearby.filter { u.category == Category.ALL || it.category == u.category }.take(2)
+            if (list.isEmpty()) Text("이 카테고리는 주변에 없어요. 다른 카테고리를 골라 보세요.", style = T.Body.copy(color = C.Sub), modifier = Modifier.padding(16.dp))
+            list.forEachIndexed { i, p ->
+                if (i > 0) Spacer(Modifier.height(9.dp))
+                HomePlaceRow(p, onOpen = { vm.openPlace(p) }, onGo = { vm.startRoute(p) })
             }
         }
-        Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(20.dp)) {
-            // 추천 드라이브 코스
-            Card(Modifier.fillMaxWidth().weight(0.47f), padding = 24.dp) {
-                SectionTitle(Icons.Outlined.AltRoute, "추천 드라이브 코스", "전체보기") { vm.select(com.mungroad.car.ui.Menu.COURSE) }
-                Spacer(Modifier.height(16.dp))
-                Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                    SampleData.courses.forEach { c -> CourseTile(c, Modifier.weight(1f).fillMaxHeight()) { vm.openCourse(c) } }
-                }
+        // 오른쪽: 다음 여행(강조 유리) → 반려견 → 추천 코스
+        Column(Modifier.weight(477f).fillMaxHeight()) {
+            HomeNextTrip(vm)
+            Spacer(Modifier.height(19.dp))
+            HomePetCard(u) { vm.select(com.mungroad.car.ui.Menu.SETTINGS) }
+            Spacer(Modifier.height(25.dp))
+            HomeSectionTitle("추천 드라이브 코스", "전체") { vm.select(com.mungroad.car.ui.Menu.COURSE) }
+            Spacer(Modifier.height(17.dp))
+            Row(Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.spacedBy(13.dp)) {
+                SampleData.courses.forEach { c -> CourseTile(c, Modifier.weight(1f).fillMaxHeight()) { vm.openCourse(c) } }
             }
-            // 내 반려견
-            Card(Modifier.fillMaxWidth().weight(0.27f), padding = 24.dp) {
-                SectionTitle(Icons.Outlined.Pets, "내 반려견", "관리") { vm.select(com.mungroad.car.ui.Menu.SETTINGS) }
-                Spacer(Modifier.height(12.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.size(96.dp).clip(CircleShape).background(C.OrangeSoft), contentAlignment = Alignment.Center) {
-                        Icon(Icons.Outlined.Pets, null, tint = C.Orange, modifier = Modifier.size(48.dp))
-                    }
-                    Spacer(Modifier.width(20.dp))
-                    Column {
-                        Text(u.pet.name, style = T.H2)
-                        Text("${u.pet.breed} · ${u.pet.ageYears.toInt()}살 · ${u.pet.weightKg.toInt()}kg", style = T.Caption)
-                        Spacer(Modifier.height(6.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Badge(u.restReason, BadgeKind.INFO); Badge("휴식 주기 ${u.restMinutes}분", BadgeKind.INFO)
-                        }
-                    }
-                }
+        }
+    }
+}
+
+@Composable
+private fun HomeHero(u: UiState, onSearch: () -> Unit) {
+    val shape = RoundedCornerShape(24.dp)
+    BoxWithConstraints(
+        Modifier.fillMaxWidth().height(425.dp)
+            .shadow(22.dp, shape, ambientColor = GlassShadow, spotColor = GlassShadow)
+            .clip(shape)
+            .background(Brush.linearGradient(listOf(Color(0xFF4F86D9), Color(0xFF7FA9E6), Color(0xFFB9D0EE)))),
+    ) {
+        // 사슴이 실제 사진 — 오른쪽 영역에 cover로 배치, 왼쪽은 블루 톤으로 자연스럽게 이어짐
+        Image(
+            painterResource(R.drawable.saseumi_hero), contentDescription = "${u.pet.name} 사진",
+            contentScale = ContentScale.Crop, alignment = BiasAlignment(0.1f, -0.2f),
+            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight().width(maxWidth * 0.66f),
+        )
+        Box(Modifier.fillMaxSize().background(Brush.horizontalGradient(
+            0f to Color(0xF23F78D6), 0.30f to Color(0xD94B84DB), 0.46f to Color(0x664B84DB), 0.60f to Color(0x004B84DB),
+        )))
+        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0f to Color(0x33FFFFFF), 0.25f to Color(0x00FFFFFF), 0.75f to Color(0x00102850), 1f to Color(0x59102850))))
+        Box(Modifier.fillMaxSize().border(1.5.dp, Brush.linearGradient(listOf(Color(0xCCFFFFFF), Color(0x40FFFFFF), Color(0x99FFFFFF))), shape))
+        Column(Modifier.padding(start = 57.dp, top = 55.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(painterResource(R.drawable.saseumi_face), null, contentScale = ContentScale.Crop,
+                    modifier = Modifier.size(34.dp).clip(CircleShape).border(2.dp, Color(0xCCFFFFFF), CircleShape))
+                Spacer(Modifier.width(10.dp))
+                Text("${u.pet.name}와 함께", fontSize = 20.sp, fontWeight = FontWeight.Medium, color = Color.White)
             }
-            // 다음 여행
-            Card(Modifier.fillMaxWidth().weight(0.26f), padding = 24.dp) {
-                SectionTitle(Icons.Outlined.DirectionsCar, "다음 여행")
-                Spacer(Modifier.height(12.dp))
-                val t = SampleData.trips.firstOrNull()
-                if (t == null) {
-                    Text("예정된 여행이 없어요. 휴대폰 멍로드 앱에서 새 여행을 만들어 보세요.", style = T.Body.copy(color = C.Sub))
-                } else Row(verticalAlignment = Alignment.CenterVertically) {
-                    Scene("sea", Modifier.width(130.dp).height(84.dp), 16.dp)
-                    Spacer(Modifier.width(18.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text(t.name, style = T.Title, maxLines = 1)
-                        Text(t.dateLabel + if (t.sample) " · 샘플" else "", style = T.Caption)
-                    }
-                    PrimaryButton("경로 안내", icon = Icons.Outlined.Navigation, height = 68.dp) { vm.openTrip(t) }
+            Spacer(Modifier.height(16.dp))
+            Text("오늘은 어디로\n떠나볼까요?", style = T.Display.copy(color = Color.White, fontSize = 46.sp, lineHeight = 60.sp))
+            Spacer(Modifier.height(30.dp))
+            Row(
+                Modifier.height(74.dp).glass(Glass.Strong, 37.dp).clickable(onClick = onSearch).padding(start = 26.dp, end = 14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Outlined.Search, null, tint = C.Ink, modifier = Modifier.size(30.dp))
+                Spacer(Modifier.width(12.dp))
+                Text("반려견 동반 코스 찾기", style = T.Title.copy(fontSize = 23.sp))
+                Spacer(Modifier.width(26.dp))
+                Box(Modifier.size(46.dp).shadow(8.dp, CircleShape, spotColor = C.Orange.copy(alpha = 0.5f)).clip(CircleShape).background(BlueCta), contentAlignment = Alignment.Center) {
+                    Icon(Icons.Outlined.ArrowForward, null, tint = Color.White, modifier = Modifier.size(26.dp))
                 }
             }
         }
+        Row(Modifier.align(Alignment.BottomStart).padding(start = 57.dp, bottom = 28.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Outlined.Image, null, tint = Color.White.copy(alpha = 0.9f), modifier = Modifier.size(22.dp))
+            Spacer(Modifier.width(8.dp))
+            Text("배경 · ${u.pet.name} 사진", fontSize = 18.sp, color = Color.White.copy(alpha = 0.92f))
+        }
+    }
+}
+
+@Composable
+private fun HomeSectionTitle(title: String, action: String, onAction: () -> Unit) {
+    Row(Modifier.fillMaxWidth().height(34.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(title, style = T.H2.copy(fontSize = 25.sp), modifier = Modifier.weight(1f))
+        Row(Modifier.clip(RoundedCornerShape(12.dp)).clickable(onClick = onAction).padding(horizontal = 8.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(action, style = T.Caption.copy(fontSize = 19.sp, color = C.Ink, fontWeight = FontWeight.Medium))
+            Icon(Icons.Outlined.ChevronRight, null, tint = C.Ink, modifier = Modifier.size(24.dp))
+        }
+    }
+}
+
+@Composable
+private fun HomeNextTrip(vm: AppViewModel) {
+    val t = SampleData.trips.firstOrNull()
+    Column(Modifier.fillMaxWidth().height(266.dp).glass(Glass.Strong, 24.dp).padding(horizontal = 26.dp, vertical = 24.dp)) {
+        if (t == null) {
+            Text("다음 여행", style = T.Caption.copy(fontSize = 19.sp))
+            Spacer(Modifier.height(12.dp))
+            Text("예정된 여행이 없어요. 휴대폰 멍로드 앱에서 새 여행을 만들어 보세요.", style = T.Body.copy(color = C.Sub))
+            return@Column
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("다음 여행 · ${t.dateLabel}", style = T.Caption.copy(fontSize = 19.sp), modifier = Modifier.weight(1f))
+            dDay(t.startDate)?.let { Text(it, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = C.DDay) }
+        }
+        Spacer(Modifier.height(14.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(78.dp).glass(Glass.Tint, 20.dp), contentAlignment = Alignment.Center) {
+                Icon(Icons.Outlined.AltRoute, null, tint = C.Orange, modifier = Modifier.size(36.dp))
+            }
+            Spacer(Modifier.width(20.dp))
+            Column(Modifier.weight(1f)) {
+                Text(t.name, style = T.H2.copy(fontSize = 28.sp), maxLines = 1)
+                Spacer(Modifier.height(4.dp))
+                Text("${t.origin} → ${t.destination.name} · 경유 ${t.waypoints.size}곳" + if (t.sample) " · 샘플" else "", style = T.Caption.copy(fontSize = 19.sp), maxLines = 1)
+            }
+        }
+        Spacer(Modifier.weight(1f))
+        PrimaryButton("경로 안내", Modifier.fillMaxWidth(), icon = Icons.Outlined.Navigation, height = 80.dp, fontSize = 26) { vm.openTrip(t) }
+    }
+}
+
+private fun dDay(date: String?): String? = runCatching {
+    val d = java.time.temporal.ChronoUnit.DAYS.between(java.time.LocalDate.now(), java.time.LocalDate.parse(date))
+    when { d > 0 -> "D-$d"; d == 0L -> "D-DAY"; else -> null }
+}.getOrNull()
+
+@Composable
+private fun HomePetCard(u: UiState, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().height(140.dp).glass(Glass.Tint, 24.dp).clickable(onClick = onClick).padding(horizontal = 24.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Image(painterResource(R.drawable.saseumi_face), "${u.pet.name} 사진", contentScale = ContentScale.Crop,
+            modifier = Modifier.size(98.dp).shadow(10.dp, CircleShape, ambientColor = GlassShadow, spotColor = GlassShadow).clip(CircleShape).border(3.dp, Color(0xE6FFFFFF), CircleShape))
+        Spacer(Modifier.width(22.dp))
+        Column {
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(u.pet.name, style = T.H2.copy(fontSize = 28.sp))
+                Spacer(Modifier.width(10.dp))
+                Text("${u.pet.breed} · ${u.pet.ageYears.toInt()}살 · ${u.pet.weightKg.toInt()}kg", style = T.Caption.copy(color = C.Sub), modifier = Modifier.padding(bottom = 3.dp))
+            }
+            Spacer(Modifier.height(6.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Outlined.Schedule, null, tint = C.Ink, modifier = Modifier.size(22.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("${u.restMinutes}분마다 쉬어 가요", style = T.Body.copy(fontWeight = FontWeight.SemiBold))
+            }
+            Text(u.restReason, style = T.Caption.copy(color = C.Tertiary))
+        }
+    }
+}
+
+@Composable
+private fun HomePlaceRow(p: Place, onOpen: () -> Unit, onGo: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().height(91.dp).glass(Glass.Regular, 20.dp).clickable(onClick = onOpen).padding(start = 14.dp, end = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        // 확인된 장소 사진이 없어 다른 곳 사진 대신 카테고리 아이콘
+        Box(Modifier.width(106.dp).height(66.dp).glass(Glass.Tint, 16.dp), contentAlignment = Alignment.Center) {
+            Icon(categoryIcon(p.category), null, tint = C.Ink.copy(alpha = 0.8f), modifier = Modifier.size(32.dp))
+        }
+        Spacer(Modifier.width(22.dp))
+        Column(Modifier.weight(1f)) {
+            Text(p.name, style = T.Title.copy(fontSize = 23.sp), maxLines = 1)
+            Spacer(Modifier.height(6.dp))
+            PlaceBadges(p)
+        }
+        val d = distanceText(p).split(" · ")
+        Column(horizontalAlignment = Alignment.End) {
+            Text(d[0], style = T.Body.copy(fontWeight = FontWeight.SemiBold))
+            Text(d.getOrElse(1) { "" }, style = T.Caption.copy(color = C.Sub))
+        }
+        Spacer(Modifier.width(18.dp))
+        RoundIconButton(Icons.Outlined.Navigation, size = 64.dp, onClick = onGo)
     }
 }
 
@@ -198,25 +311,32 @@ fun PlaceRow(p: Place, onOpen: () -> Unit, onGo: () -> Unit, showUser: Boolean =
 
 @Composable
 fun CourseTile(c: Course, modifier: Modifier, onClick: () -> Unit) {
-    Box(modifier.clip(RoundedCornerShape(22.dp)).clickable(onClick = onClick)) {
-        Scene(c.image, Modifier.fillMaxSize(), 22.dp)
-        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, Color(0x99000000)))))
-        Column(Modifier.align(Alignment.BottomStart).padding(18.dp)) {
-            if (c.fromFeed) Badge("여행 피드에서 담음", BadgeKind.USER)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Outlined.Place, null, tint = Color.White, modifier = Modifier.size(24.dp))
-                Spacer(Modifier.width(6.dp))
-                Text(c.name, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White, maxLines = 1)
-            }
-            Spacer(Modifier.height(6.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Outlined.DirectionsCar, null, tint = Color.White, modifier = Modifier.size(20.dp))
-                Text(" ${c.totalKm}km  ", fontSize = 18.sp, color = Color.White)
-                Icon(Icons.Outlined.Schedule, null, tint = Color.White, modifier = Modifier.size(20.dp))
-                Text(" ${c.minutes / 60}시간 ${c.minutes % 60}분", fontSize = 18.sp, color = Color.White)
+    val shape = RoundedCornerShape(20.dp)
+    Box(modifier.shadow(14.dp, shape, ambientColor = GlassShadow, spotColor = GlassShadow).clip(shape).clickable(onClick = onClick)) {
+        val img = courseImage(c.image)
+        if (img != null) Image(painterResource(img), "${c.name} 분위기 예시", contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+        else Scene(c.image, Modifier.fillMaxSize(), 20.dp)
+        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.4f to Color(0x00102850), 1f to Color(0xB3102850))))
+        Box(Modifier.fillMaxSize().border(1.5.dp, Brush.linearGradient(listOf(Color(0xCCFFFFFF), Color(0x33FFFFFF), Color(0x99FFFFFF))), shape))
+        if (img != null) {
+            Box(Modifier.padding(14.dp).clip(RoundedCornerShape(10.dp)).background(Color(0x40FFFFFF)).border(1.dp, Color(0x80FFFFFF), RoundedCornerShape(10.dp)).padding(horizontal = 12.dp, vertical = 3.dp)) {
+                Text("예시", fontSize = 18.sp, color = Color.White, fontWeight = FontWeight.Medium)
             }
         }
+        Column(Modifier.align(Alignment.BottomStart).padding(start = 20.dp, end = 12.dp, bottom = 20.dp)) {
+            if (c.fromFeed) { Badge("여행 피드에서 담음", BadgeKind.USER); Spacer(Modifier.height(6.dp)) }
+            Text(c.name, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White, maxLines = 1, letterSpacing = (-0.4).sp)
+            Spacer(Modifier.height(4.dp))
+            Text("${c.totalKm}km · ${c.minutes / 60}시간 ${c.minutes % 60}분", fontSize = 19.sp, color = Color.White, maxLines = 1)
+        }
     }
+}
+
+/** 코스 사진: 지역 분위기 예시(실제 코스 장소 사진 아님 → '예시' 표시) */
+private fun courseImage(key: String): Int? = when (key) {
+    "sea" -> R.drawable.course_sea
+    "park" -> R.drawable.course_forest
+    else -> null
 }
 
 // ───────────────────────────── 멍스팟 (WF-C02) ─────────────────────────────

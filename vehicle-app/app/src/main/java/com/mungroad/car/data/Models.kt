@@ -100,6 +100,8 @@ data class Trip(
     val waypoints: List<Place>,
     val petIds: List<String>,
     val sample: Boolean = true,
+    /** 출발일(yyyy-MM-dd) — 홈 'D-day' 표시용. 모바일 Trip.startDate 와 같은 값 */
+    val startDate: String? = null,
 )
 
 enum class RestStartMethod { BUTTON, VOICE, DOOR }
