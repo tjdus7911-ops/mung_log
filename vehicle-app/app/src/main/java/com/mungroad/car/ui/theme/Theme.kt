@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -112,6 +113,7 @@ fun GlassBackground(modifier: Modifier = Modifier, content: @Composable BoxScope
 }
 
 /** Pretendard(가변) — 시안과 같은 계열의 한글 산세리프 */
+@OptIn(ExperimentalTextApi::class)
 val Pretendard = FontFamily(
     listOf(400, 500, 600, 700, 800).map { w ->
         Font(R.font.pretendard_variable, FontWeight(w), variationSettings = FontVariation.Settings(FontVariation.weight(w)))
