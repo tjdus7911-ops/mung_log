@@ -70,6 +70,10 @@ import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import com.mungroad.car.R
 import com.mungroad.car.ui.theme.BlueCta
@@ -144,10 +148,16 @@ private fun HomeHero(u: UiState, onSearch: () -> Unit) {
         Image(
             painterResource(R.drawable.saseumi_hero), contentDescription = "${u.pet.name} 사진",
             contentScale = ContentScale.Crop, alignment = BiasAlignment(0.1f, -0.2f),
-            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight().width(maxWidth * 0.66f),
+            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight().width(maxWidth * 0.74f)
+                // 사진 왼쪽 가장자리를 투명하게 → 블루 바탕과 경계 없이 이어짐
+                .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+                .drawWithContent {
+                    drawContent()
+                    drawRect(Brush.horizontalGradient(0f to Color.Transparent, 0.42f to Color.Black, startX = 0f, endX = size.width), blendMode = BlendMode.DstIn)
+                },
         )
         Box(Modifier.fillMaxSize().background(Brush.horizontalGradient(
-            0f to Color(0xF23F78D6), 0.30f to Color(0xD94B84DB), 0.46f to Color(0x664B84DB), 0.60f to Color(0x004B84DB),
+            0f to Color(0xE63F78D6), 0.30f to Color(0xA64B84DB), 0.50f to Color(0x404B84DB), 0.64f to Color(0x004B84DB),
         )))
         Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0f to Color(0x33FFFFFF), 0.25f to Color(0x00FFFFFF), 0.75f to Color(0x00102850), 1f to Color(0x59102850))))
         Box(Modifier.fillMaxSize().border(1.5.dp, Brush.linearGradient(listOf(Color(0xCCFFFFFF), Color(0x40FFFFFF), Color(0x99FFFFFF))), shape))
@@ -319,7 +329,7 @@ fun CourseTile(c: Course, modifier: Modifier, onClick: () -> Unit) {
         Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.4f to Color(0x00102850), 1f to Color(0xB3102850))))
         Box(Modifier.fillMaxSize().border(1.5.dp, Brush.linearGradient(listOf(Color(0xCCFFFFFF), Color(0x33FFFFFF), Color(0x99FFFFFF))), shape))
         if (img != null) {
-            Box(Modifier.padding(14.dp).clip(RoundedCornerShape(10.dp)).background(Color(0x40FFFFFF)).border(1.dp, Color(0x80FFFFFF), RoundedCornerShape(10.dp)).padding(horizontal = 12.dp, vertical = 3.dp)) {
+            Box(Modifier.padding(14.dp).clip(RoundedCornerShape(10.dp)).background(Color(0x66102850)).border(1.dp, Color(0x99FFFFFF), RoundedCornerShape(10.dp)).padding(horizontal = 12.dp, vertical = 3.dp)) {
                 Text("예시", fontSize = 18.sp, color = Color.White, fontWeight = FontWeight.Medium)
             }
         }

@@ -201,7 +201,7 @@ fun Sidebar(active: Menu, locked: Boolean, onSelect: (Menu) -> Unit) {
             Column(
                 Modifier
                     .width(118.dp).height(92.dp)
-                    .then(if (on) Modifier.glass(Glass.Strong, 22.dp) else Modifier.clip(RoundedCornerShape(22.dp)))
+                    .then(if (on) Modifier.glass(Glass.Strong, 22.dp).border(1.dp, C.Orange.copy(alpha = 0.18f), RoundedCornerShape(22.dp)) else Modifier.clip(RoundedCornerShape(22.dp)))
                     .clickable { onSelect(m) },
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
