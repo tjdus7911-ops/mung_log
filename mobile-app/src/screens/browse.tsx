@@ -58,7 +58,7 @@ export function HomeScreen() {
   const quick: { label: string; icon: string; go: () => void; hl?: boolean }[] = [
     { label: '여행 계획', icon: 'mapPin', go: () => nav.push({ name: 'tripBuilder' }), hl: true },
     { label: '코스 탐색', icon: 'nodes', go: () => nav.setTab('community') },
-    { label: '멍스팟', icon: 'paw', go: () => nav.setTab('explore') },
+    { label: '멍스팟', icon: 'pawLine', go: () => nav.setTab('explore') },
     { label: '내 여행', icon: 'calendar', go: () => nav.setTab('trips') },
     { label: '커뮤니티', icon: 'users', go: () => nav.setTab('community') },
     { label: '반려견 정보', icon: 'heart', go: () => nav.push({ name: 'pet', id: pet?.id }) },
@@ -84,7 +84,7 @@ export function HomeScreen() {
       <button className="home-search glass" onClick={() => nav.setTab('explore')}>
         <Icon name="search" size={22} color="var(--ink)" />
         <span className="t">반려견과 가기 좋은 곳 검색</span>
-        <span className="f"><Icon name="sliders" size={22} /></span>
+        <span className="f"><Icon name="filter" size={22} /></span>
       </button>
 
       <div className="trip-rail" onScroll={(e) => { const el = e.currentTarget; setIdx(Math.round(el.scrollLeft / (el.clientWidth - 28))) }}>

@@ -67,6 +67,7 @@ import com.mungroad.car.ui.components.SectionTitle
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.Route
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.layout.ContentScale
@@ -220,7 +221,7 @@ private fun HomeNextTrip(vm: AppViewModel) {
         Spacer(Modifier.height(14.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(78.dp).glass(Glass.Tint, 20.dp), contentAlignment = Alignment.Center) {
-                Icon(Icons.Outlined.AltRoute, null, tint = C.Orange, modifier = Modifier.size(36.dp))
+                Icon(Icons.Outlined.Route, null, tint = C.Orange, modifier = Modifier.size(36.dp))
             }
             Spacer(Modifier.width(20.dp))
             Column(Modifier.weight(1f)) {

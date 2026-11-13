@@ -29,11 +29,11 @@
 .trip .txt { position: absolute; left: 18px; right: 64px; bottom: 18px; }
 .trip h2 { margin: 0; font-size: 22px; line-height: 29px; font-weight: 700; letter-spacing: -0.04em; text-shadow: 0 1px 8px rgba(0,0,0,.18); }
 .trip .meta { font-size: 13.5px; margin-top: 4px; opacity: .95; }
-.trip .go { position: absolute; right: 16px; bottom: 18px; width: 36px; height: 36px; border-radius: 18px; background: #fff; color: var(--ink); display: grid; place-items: center; box-shadow: 0 4px 12px rgba(0,0,0,.18); }
+.trip .go { position: absolute; right: 16px; bottom: 20px; width: 32px; height: 32px; border-radius: 16px; background: #fff; color: var(--ink); display: grid; place-items: center; box-shadow: 0 4px 12px rgba(0,0,0,.18); }
 .trip.empty { background: linear-gradient(135deg, #6ea3ee, #3c74dc); }
 .dots { display: flex; justify-content: center; gap: 6px; margin-top: 12px; height: 6px; }
-.dots i { width: 6px; height: 6px; border-radius: 3px; background: rgba(20,32,58,.18); transition: all .2s; }
-.dots i.on { width: 16px; background: var(--orange); }
+.dots i { width: 6px; height: 6px; border-radius: 3px; background: rgba(20,32,58,.16); transition: background .2s; }
+.dots i.on { background: var(--ink); }
 
 .quick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-top: 14px; }
 .quick button { height: 90px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--ink); }
