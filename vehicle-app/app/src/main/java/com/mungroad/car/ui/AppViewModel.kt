@@ -464,7 +464,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         if (u.screen is Screen.Arrived) return
         demo?.hold = true
         _ui.update { it.copy(screen = Screen.Arrived(name), card = null, visited = it.visited + name) }
-        if (u.voiceOn) speaker?.speak("$name에 도착했어요.")
+        if (u.voiceOn) speaker?.speak("${name}에 도착했어요.")
     }
 
     fun nextLeg() {
