@@ -1,0 +1,12 @@
+# 이 파일을 local.properties 로 복사해 쓰세요(커밋하지 않음).
+sdk.dir=/path/to/Android/sdk
+
+# Pleos Connect SDK(NaviHelper·Vehicle·TextToSpeech) 포함 빌드. Pleos Connect Emulator / 차량에서 실행할 때 true
+mungroad.usePleosSdk=false
+# SDK 버전(Pleos Playground 문서의 최신 값으로 맞추세요)
+pleos.vehicleVersion=2.3.2
+pleos.naviHelperVersion=3.0.5
+pleos.ttsVersion=3.3.1
+
+# 장소·휴게소 데이터 서버(관광공사·도로공사 API 키는 서버에 둡니다). 비우면 앱 내장 샘플 데이터 사용
+MUNGROAD_API_BASE_URL=
