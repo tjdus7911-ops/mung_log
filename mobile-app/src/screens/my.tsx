@@ -5,6 +5,7 @@ import { useNav } from '../nav'
 import { getState, resetState, setState, uid, useStore } from '../store'
 import { syncConfigured, syncPet } from '../sync'
 import { Icon, Progress, TopBar, Toggle } from '../ui'
+import { petFace, readPhoto } from '../photos'
 
 const HEALTHS: Health[] = ['NONE', 'JOINT', 'HEART', 'RESPIRATORY', 'KIDNEY', 'DIABETES']
 
@@ -114,8 +115,10 @@ export function MyScreen() {
         <div className="stack">
           {s.pets.map((p) => (
             <button key={p.id} className="list-item" onClick={() => nav.push({ name: 'pet', id: p.id })}>
-              <div className="thumb" style={{ borderRadius: 32, background: 'var(--orange-soft)', display: 'grid', placeItems: 'center' }}><Icon name="paw" color="var(--orange)" size={30} /></div>
-              <div className="grow"><h3>{p.name}</h3><div className="muted">{p.breed} · {ageYears(p).toFixed(0)}살 · {p.weightKg}kg</div></div>
+              {petFace(p)
+                ? <img className="thumb" src={petFace(p)!} alt="" style={{ borderRadius: 32, objectFit: 'cover' }} />
+                : <div className="thumb" style={{ borderRadius: 32, background: 'var(--orange-soft)', display: 'grid', placeItems: 'center' }}><Icon name="paw" color="var(--orange)" size={30} /></div>}
+              <div className="grow"><h3>{p.name}</h3><div className="muted">{p.breed} · {Math.floor(ageYears(p))}살 · {p.weightKg}kg</div></div>
               <span className="badge brand">휴식 {recommend(p).minutes}분</span>
             </button>
           ))}
@@ -128,6 +131,7 @@ export function MyScreen() {
           <Toggle label="위치 사용 동의" on={s.consent.location} onChange={(v) => setState((st) => ({ ...st, consent: { ...st.consent, location: v } }))} />
           <Toggle label="차량 앱 동기화 동의" on={s.consent.sync} onChange={(v) => setState((st) => ({ ...st, consent: { ...st.consent, sync: v } }))} />
         </div>
+        <HomeBgSetting />
         <h2>개인정보 · 데이터</h2>
         <div className="card stack">
           <p className="tiny" style={{ margin: 0 }}>보낼 항목 {s.outbox.length}개가 휴대폰에 보관돼 있어요{syncConfigured ? '' : ' (동기화 서버 연결 전)'}.</p>
@@ -153,6 +157,7 @@ export function PetScreen({ id }: { id?: string }) {
     <>
       <TopBar title={existing ? `${existing.name} 정보` : '반려견 추가'} onBack={nav.back} />
       <div className="page no-tabs">
+        <PetPhoto pet={pet} onChange={setPet} />
         <PetForm pet={pet} onChange={setPet} />
         <h2>건강 상태 (선택)</h2>
         <HealthPicker pet={pet} onChange={setPet} />
@@ -228,6 +233,66 @@ export function CarLinkScreen() {
           <div className="tiny">차 → 휴대폰: 여행 마무리 때 주행·휴식·방문 기록(사진·일기는 휴대폰에서)</div>
           <div className="tiny">차량 신호(속도·기어·내비)는 차량 앱이 Pleos SDK로만 읽고 휴대폰으로 보내지 않아요.</div>
         </div>
+      </div>
+    </>
+  )
+}
+
+// ───────────────────────────── 반려견 프로필 사진 ─────────────────────────────
+function PetPhoto({ pet, onChange }: { pet: Pet; onChange: (p: Pet) => void }) {
+  const nav = useNav()
+  const face = petFace(pet)
+  const pick = async (f?: File) => {
+    if (!f) return
+    try { onChange({ ...pet, photo: await readPhoto(f, 'square') }) } catch { nav.toast('사진을 열 수 없어요. 다른 사진을 골라 주세요') }
+  }
+  return (
+    <div className="row" style={{ gap: 16, marginTop: 6 }}>
+      <label style={{ position: 'relative', cursor: 'pointer' }} aria-label="프로필 사진 고르기">
+        {face
+          ? <img src={face} alt="" style={{ width: 88, height: 88, borderRadius: 44, objectFit: 'cover', border: '3px solid #fff', boxShadow: 'var(--shadow)' }} />
+          : <span style={{ width: 88, height: 88, borderRadius: 44, background: 'var(--orange-soft)', display: 'grid', placeItems: 'center' }}><Icon name="paw" size={36} color="var(--orange)" /></span>}
+        <span style={{ position: 'absolute', right: -2, bottom: -2, width: 30, height: 30, borderRadius: 15, background: 'var(--cta)', color: '#fff', display: 'grid', placeItems: 'center', border: '2px solid #fff' }}><Icon name="camera" size={16} /></span>
+        <input type="file" accept="image/*" hidden onChange={(e) => { pick(e.target.files?.[0]); e.target.value = '' }} />
+      </label>
+      <div className="grow">
+        <h3>프로필 사진</h3>
+        <p className="tiny" style={{ margin: '4px 0 0' }}>정사각형으로 맞춰 이 휴대폰에 저장돼요. 홈과 마이에 보여요.</p>
+        {pet.photo && <button className="tiny" style={{ marginTop: 6, color: 'var(--alert)' }} onClick={() => onChange({ ...pet, photo: undefined })}>사진 지우기</button>}
+      </div>
+    </div>
+  )
+}
+
+// ───────────────────────────── 홈 배경(여행 카드 사진) ─────────────────────────────
+function HomeBgSetting() {
+  const s = useStore()
+  const nav = useNav()
+  const kind = s.homeBg?.kind ?? 'pet'
+  const pick = async (f?: File) => {
+    if (!f) return
+    try {
+      const custom = await readPhoto(f, 'wide')
+      setState((st) => ({ ...st, homeBg: { kind: 'custom', custom } }))
+      nav.toast('홈 배경을 내 사진으로 바꿨어요')
+    } catch { nav.toast('사진을 열 수 없어요. 다른 사진을 골라 주세요') }
+  }
+  return (
+    <>
+      <h2>홈 배경</h2>
+      <div className="card" style={{ padding: '4px 16px' }}>
+        <button className="row between" style={{ width: '100%', padding: '14px 0', borderBottom: '1px solid var(--divider)' }} onClick={() => setState((st) => ({ ...st, homeBg: { ...st.homeBg, kind: 'pet' } }))}>
+          <span style={{ fontSize: 15 }}>{s.pets[0]?.name ?? '반려견'} 사진</span>{kind === 'pet' && <Icon name="check" color="var(--orange)" />}
+        </button>
+        {s.homeBg?.custom && (
+          <button className="row between" style={{ width: '100%', padding: '14px 0', borderBottom: '1px solid var(--divider)' }} onClick={() => setState((st) => ({ ...st, homeBg: { ...st.homeBg, kind: 'custom' } }))}>
+            <span style={{ fontSize: 15 }}>내가 올린 사진</span>{kind === 'custom' && <Icon name="check" color="var(--orange)" />}
+          </button>
+        )}
+        <label className="row between" style={{ width: '100%', padding: '14px 0', cursor: 'pointer' }}>
+          <span style={{ fontSize: 15 }}>{s.homeBg?.custom ? '다른 사진으로 바꾸기' : '내 사진 올리기'}</span><Icon name="camera" color="var(--tertiary)" />
+          <input type="file" accept="image/*" hidden onChange={(e) => { pick(e.target.files?.[0]); e.target.value = '' }} />
+        </label>
       </div>
     </>
   )

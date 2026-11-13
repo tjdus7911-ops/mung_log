@@ -18,6 +18,8 @@ export interface Pet {
   health: Health[]
   customRestMinutes?: number
   vetRestMinutes?: number
+  /** 프로필 사진(dataURL, 휴대폰에 저장). 없으면 기본 사진 또는 발바닥 아이콘 */
+  photo?: string
 }
 
 export type Category = 'CAFE' | 'RESTAURANT' | 'PARK' | 'STAY' | 'FACILITY' | 'REST_AREA'

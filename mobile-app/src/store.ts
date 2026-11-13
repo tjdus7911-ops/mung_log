@@ -14,6 +14,8 @@ export interface AppData {
   car: { linked: boolean; name: string; lastSync?: string }
   consent: { location: boolean; sync: boolean }
   outbox: { kind: string; id: string; at: number }[]
+  /** 홈 여행 카드 배경: 반려견 사진(기본) 또는 내가 올린 사진 */
+  homeBg?: { kind: 'pet' | 'custom'; custom?: string }
 }
 
 const KEY = 'mungroad.v1'

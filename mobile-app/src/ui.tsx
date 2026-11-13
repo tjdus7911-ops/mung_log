@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import type { Place } from './data/models'
 
 // 24px stroke 아이콘 — Figma 'icon/*' 와 같은 모양
-const P = { fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
+const P = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
 const paths: Record<string, ReactNode> = {
   home: <path {...P} d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" />,
   search: <><circle {...P} cx="11" cy="11" r="7" /><path {...P} d="m20 20-3.5-3.5" /></>,
@@ -23,9 +23,13 @@ const paths: Record<string, ReactNode> = {
   route: <><circle {...P} cx="6" cy="19" r="2" /><circle {...P} cx="18" cy="5" r="2" /><path {...P} d="M8 19h8.5a3.5 3.5 0 0 0 0-7h-9a3.5 3.5 0 0 1 0-7H16" /></>,
   lock: <><rect {...P} x="5" y="11" width="14" height="10" rx="2" /><path {...P} d="M8 11V7a4 4 0 0 1 8 0v4" /></>,
   info: <><circle {...P} cx="12" cy="12" r="9" /><path {...P} d="M12 8v5M12 16h.01" /></>,
-  settings: <><circle {...P} cx="12" cy="12" r="3" /><path {...P} d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" /></>,
+  settings: <><circle {...P} cx="12" cy="12" r="2.8" /><path {...P} d="M19.4 13.5a7.6 7.6 0 0 0 0-3l1.8-1.4-1.8-3.1-2.2.8a7.5 7.5 0 0 0-2.6-1.5L14.2 3h-4.4l-.4 2.3a7.5 7.5 0 0 0-2.6 1.5l-2.2-.8-1.8 3.1 1.8 1.4a7.6 7.6 0 0 0 0 3l-1.8 1.4 1.8 3.1 2.2-.8a7.5 7.5 0 0 0 2.6 1.5l.4 2.3h4.4l.4-2.3a7.5 7.5 0 0 0 2.6-1.5l2.2.8 1.8-3.1z" /></>,
   camera: <><path {...P} d="M4 7h3l2-2.5h6L17 7h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z" /><circle {...P} cx="12" cy="13" r="3.5" /></>,
   sparkle: <path {...P} d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6" />,
+  sliders: <><path {...P} d="M4 7h10M18 7h2M4 17h4M12 17h8" /><circle {...P} cx="16" cy="7" r="2" /><circle {...P} cx="10" cy="17" r="2" /></>,
+  mapPin: <><path {...P} d="M12 21s-6.5-5.8-6.5-11a6.5 6.5 0 0 1 13 0c0 5.2-6.5 11-6.5 11z" /><circle {...P} cx="12" cy="10" r="2.3" /></>,
+  nodes: <><circle {...P} cx="6" cy="17" r="2.3" /><circle {...P} cx="18" cy="7" r="2.3" /><path {...P} d="M8 15.5 16 8.5" /></>,
+  pawLine: <><ellipse {...P} cx="6.6" cy="10" rx="1.6" ry="2" /><ellipse {...P} cx="10" cy="6.3" rx="1.6" ry="2.1" /><ellipse {...P} cx="14" cy="6.3" rx="1.6" ry="2.1" /><ellipse {...P} cx="17.4" cy="10" rx="1.6" ry="2" /><path {...P} d="M12 11.5c-2.6 0-5 3.5-5 5.7 0 1.2.9 2 2.1 2 1 0 1.8-.5 2.9-.5s1.9.5 2.9.5c1.2 0 2.1-.8 2.1-2 0-2.2-2.4-5.7-5-5.7z" /></>,
   share: <><circle {...P} cx="18" cy="5" r="2.5" /><circle {...P} cx="6" cy="12" r="2.5" /><circle {...P} cx="18" cy="19" r="2.5" /><path {...P} d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4" /></>,
 }
 

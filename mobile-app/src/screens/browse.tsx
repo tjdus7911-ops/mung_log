@@ -6,6 +6,8 @@ import { useNav } from '../nav'
 import { setState, useStore } from '../store'
 import { syncConfigured } from '../sync'
 import { Icon, PlaceBadges, Scene, TopBar } from '../ui'
+import { homeBackground, petFace } from '../photos'
+import './home.css'
 
 const BROWSABLE = PLACES.filter((p) => p.category !== 'REST_AREA')
 
@@ -37,73 +39,136 @@ export function PlaceItem({ p }: { p: Place }) {
   )
 }
 
-// ───────────────────────────── 홈 (WF-M03 / D-M01) ─────────────────────────────
+// ───────────────────────────── 홈 (WF-M03 · 최종 시안 2026-11-13 블루 글래스) ─────────────────────────────
+const todayStr = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10)
+const md = (d: string) => `${Number(d.slice(5, 7))}.${Number(d.slice(8, 10))}`
+
 export function HomeScreen() {
   const s = useStore()
   const nav = useNav()
   const pet = s.pets[0]
-  const next = [...s.trips].sort((a, b) => a.startDate.localeCompare(b.startDate))[0]
-  const dest = next ? placeMap[next.destinationId] : undefined
-  const dday = next ? Math.ceil((new Date(next.startDate).getTime() - Date.now()) / 86400000) : 0
+  const sorted = [...s.trips].sort((a, b) => a.startDate.localeCompare(b.startDate))
+  const upcoming = sorted.filter((t) => t.endDate >= todayStr())
+  const trips = upcoming.length ? upcoming : sorted.slice(0, 1)
+  const bg = homeBackground(s)
+  const face = petFace(pet)
+  const [idx, setIdx] = useState(0)
+
+  // 바로가기 — 모두 기존 화면으로 연결(새 기능 없음)
+  const quick: { label: string; icon: string; go: () => void; hl?: boolean }[] = [
+    { label: '여행 계획', icon: 'mapPin', go: () => nav.push({ name: 'tripBuilder' }), hl: true },
+    { label: '코스 탐색', icon: 'nodes', go: () => nav.setTab('community') },
+    { label: '멍스팟', icon: 'paw', go: () => nav.setTab('explore') },
+    { label: '내 여행', icon: 'calendar', go: () => nav.setTab('trips') },
+    { label: '커뮤니티', icon: 'users', go: () => nav.setTab('community') },
+    { label: '반려견 정보', icon: 'heart', go: () => nav.push({ name: 'pet', id: pet?.id }) },
+  ]
+
   return (
-    <>
-      <div className="topbar">
-        <Icon name="paw" color="var(--orange)" size={28} />
-        <span className="brand grow">멍로드</span>
-        <button className="icon-btn" aria-label="설정" onClick={() => nav.setTab('my')}><Icon name="settings" color="var(--sub)" /></button>
-      </div>
-      <div className="page">
-        {next && dest ? (
-          <button className="card flush press" onClick={() => nav.push({ name: 'trip', id: next.id })}>
-            <Scene img={dest.image} h={120} radius={0} shade>
-              <span className="badge" style={{ position: 'absolute', top: 12, left: 12, background: 'var(--orange)', color: '#fff', fontWeight: 700 }}>
-                {dday > 0 ? `D-${dday}` : dday === 0 ? 'D-DAY' : '지난 여행'}
-              </span>
-              <h3 style={{ position: 'absolute', left: 16, bottom: 12, color: '#fff', fontSize: 18 }}>{next.name}</h3>
-            </Scene>
-            <div className="row between" style={{ padding: 14 }}>
-              <div>
-                <div className="muted">{next.startDate.slice(5).replace('-', '.')} – {next.endDate.slice(5).replace('-', '.')} · 경유 {next.waypointIds.length}곳</div>
-                <span className={`badge ${next.sentToCar ? 'ok' : 'info'}`} style={{ marginTop: 6 }}>{next.sentToCar ? '차로 보냄' : '아직 차로 보내지 않음'}</span>
-              </div>
-              <span className="chip soft">여행 보기</span>
-            </div>
-          </button>
-        ) : (
-          <div className="card soft">
-            <h3>예정된 여행이 없어요</h3>
-            <p className="muted">여행을 만들어 차로 보내면, 차에서 ‘경로 안내’ 한 번으로 출발해요.</p>
-            <button className="btn primary" onClick={() => nav.push({ name: 'tripBuilder' })}><Icon name="plus" />새 여행 만들기</button>
-          </div>
-        )}
+    <div className="home">
+      <header className="home-head">
+        <div className="home-logo">
+          <span className="mark"><Icon name="paw" size={30} /></span>
+          <div><b>멍로드</b><small>MUNGROAD</small></div>
+        </div>
+        <button className="home-icon-btn" aria-label="설정" onClick={() => nav.setTab('my')}><Icon name="settings" size={24} /></button>
+      </header>
 
-        <div className="row between"><h2>지금 주변 반려견 동반 장소</h2><button className="tiny" onClick={() => nav.setTab('explore')}>전체보기</button></div>
-        {!s.consent.location && <p className="tiny" style={{ marginTop: -4 }}>위치 동의 전이라 강릉 주변 샘플을 보여 드려요.</p>}
-        <div className="stack">{BROWSABLE.slice(0, 2).map((p) => <PlaceItem key={p.id} p={p} />)}</div>
-
-        {pet && (
-          <button className="list-item" style={{ marginTop: 16 }} onClick={() => nav.push({ name: 'rest', petId: pet.id })}>
-            <div className="thumb" style={{ borderRadius: 32, background: 'var(--orange-soft)', display: 'grid', placeItems: 'center' }}><Icon name="paw" color="var(--orange)" size={30} /></div>
-            <div className="grow">
-              <h3>{pet.name}</h3>
-              <div className="muted">{pet.breed} · {pet.weightKg}kg · {recommend(pet).reason}</div>
-            </div>
-            <span className="badge brand">휴식 {recommend(pet).minutes}분</span>
-          </button>
-        )}
-
-        <button className="card soft press row" style={{ marginTop: 16 }} onClick={() => nav.push({ name: 'carLink' })}>
-          <Icon name="car" color="var(--orange)" size={28} />
-          <div className="grow">
-            <h3>{s.car.linked ? `차량 앱과 연결됨 · ${s.car.name}` : '차량 앱 연결하기'}</h3>
-            <div className="muted">
-              {s.car.linked ? (syncConfigured ? `마지막 동기화 ${s.car.lastSync ?? '-'}` : '동기화 서버 연결 전 · 보낼 항목은 휴대폰에 보관돼요') : 'Pleos Connect 차량의 멍로드 앱과 같은 계정으로 연결'}
-            </div>
-          </div>
-          <Icon name="chevron" color="var(--tertiary)" />
+      <div className="home-greet">
+        <h1>오늘은 어디로<br />떠나볼까요?<span className="paw"><Icon name="paw" size={22} /></span></h1>
+        <button className="home-ava" aria-label={pet ? `${pet.name} 정보` : '반려견 등록'} onClick={() => nav.push({ name: 'pet', id: pet?.id })}>
+          {face ? <img src={face} alt={pet ? `${pet.name} 사진` : ''} /> : <span className="ph"><Icon name="paw" size={44} /></span>}
         </button>
       </div>
-    </>
+
+      <button className="home-search glass" onClick={() => nav.setTab('explore')}>
+        <Icon name="search" size={22} color="var(--ink)" />
+        <span className="t">반려견과 가기 좋은 곳 검색</span>
+        <span className="f"><Icon name="sliders" size={22} /></span>
+      </button>
+
+      <div className="trip-rail" onScroll={(e) => { const el = e.currentTarget; setIdx(Math.round(el.scrollLeft / (el.clientWidth - 28))) }}>
+        {trips.length ? trips.map((t) => {
+          const dest = placeMap[t.destinationId]
+          const dday = Math.ceil((new Date(t.startDate).getTime() - Date.now()) / 86400000)
+          return (
+            <button key={t.id} className="trip" onClick={() => nav.push({ name: 'trip', id: t.id })}>
+              {bg.src && <img src={bg.src} alt="" style={{ objectPosition: bg.position }} />}
+              <div className="shade" /><div className="edge" />
+              <div className="chips">
+                <span className="glass-chip"><Icon name="paw" size={14} />{dday > 0 ? `D-${dday}` : dday === 0 ? 'D-DAY' : '지난'} 여행</span>
+                <span className="glass-chip">{t.sentToCar ? '차로 보냄' : '아직 차로 보내지 않음'}</span>
+              </div>
+              <div className="txt">
+                <h2>{t.name}</h2>
+                <div className="meta">{md(t.startDate)} – {md(t.endDate)}{dest ? ` · ${dest.name}` : ''} · 경유 {t.waypointIds.length}곳</div>
+              </div>
+              <span className="go"><Icon name="chevron" size={20} /></span>
+            </button>
+          )
+        }) : (
+          <button className="trip empty" onClick={() => nav.push({ name: 'tripBuilder' })}>
+            <div className="edge" />
+            <div className="txt" style={{ right: 18 }}>
+              <h2>예정된 여행이 없어요</h2>
+              <div className="meta">여행을 만들어 차로 보내면, 차에서 ‘경로 안내’ 한 번으로 출발해요</div>
+            </div>
+            <span className="go"><Icon name="plus" size={20} /></span>
+          </button>
+        )}
+      </div>
+      <div className="dots" aria-hidden>{(trips.length ? trips : [0]).map((_, i) => <i key={i} className={i === Math.min(idx, trips.length - 1) ? 'on' : ''} />)}</div>
+
+      <div className="quick">
+        {quick.map((q) => (
+          <button key={q.label} className={q.hl ? 'hl' : 'glass'} onClick={q.go}>
+            <Icon name={q.icon} size={26} />{q.label}
+          </button>
+        ))}
+      </div>
+
+      {/* 시안 아래: 기존 홈 요소(주변 장소·즐겨찾기 / 반려견 휴식 간격 / 차량 연결) */}
+      <section className="home-sec">
+        <div className="home-sec-head"><h3>지금 주변 반려견 동반 장소</h3><button onClick={() => nav.setTab('explore')}>전체보기<Icon name="chevron" size={16} /></button></div>
+        {!s.consent.location && <p className="home-note">위치 동의 전이라 강릉 주변 샘플을 보여 드려요.</p>}
+        <div className="home-list glass">
+          {BROWSABLE.slice(0, 2).map((p) => (
+            <div key={p.id} className="home-place">
+              <button onClick={() => nav.push({ name: 'place', id: p.id })} style={{ display: 'flex', gap: 12, alignItems: 'center', flex: 1, minWidth: 0, textAlign: 'left' }}>
+                <span className="ic glass tint"><Icon name="mapPin" size={24} /></span>
+                <div style={{ minWidth: 0 }}>
+                  <h4>{p.name}</h4>
+                  <div className="sub">{p.region} · {CATEGORY_LABEL[p.category]}</div>
+                  <PlaceBadges p={p} max={1} showUser />
+                </div>
+              </button>
+              <FavButton id={p.id} />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {pet && (
+        <button className="home-pet glass" onClick={() => nav.push({ name: 'rest', petId: pet.id })}>
+          {face ? <img src={face} alt="" /> : <span className="ph"><Icon name="paw" size={28} /></span>}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h4>{pet.name}</h4>
+            <div className="sub">{pet.breed} · {pet.weightKg}kg</div>
+            <div className="sub">{recommend(pet).reason}</div>
+          </div>
+          <span className="rest-pill">휴식 {recommend(pet).minutes}분</span>
+        </button>
+      )}
+
+      <button className="home-car glass" onClick={() => nav.push({ name: 'carLink' })}>
+        <span className="ic glass tint"><Icon name="car" size={24} /></span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h4>{s.car.linked ? `차량 앱과 연결됨 · ${s.car.name}` : '차량 앱 연결하기'}</h4>
+          <div className="sub">{s.car.linked ? (syncConfigured ? `마지막 동기화 ${s.car.lastSync ?? '-'}` : '동기화 서버 연결 전 · 보낼 항목은 휴대폰에 보관돼요') : 'Pleos Connect 차량의 멍로드 앱과 같은 계정으로 연결'}</div>
+        </div>
+        <Icon name="chevron" color="var(--tertiary)" />
+      </button>
+    </div>
   )
 }
 

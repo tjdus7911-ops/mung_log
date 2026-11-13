@@ -12,7 +12,7 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'explore', label: '탐색', icon: 'search' },
   { id: 'trips', label: '여행', icon: 'calendar' },
   { id: 'community', label: '커뮤니티', icon: 'users' },
-  { id: 'my', label: '마이', icon: 'paw' },
+  { id: 'my', label: '마이', icon: 'settings' },
 ]
 
 export default function App() {
@@ -69,7 +69,7 @@ export default function App() {
           <nav className="tabbar">
             {TABS.map((t) => (
               <button key={t.id} className={tab === t.id ? 'on' : ''} onClick={() => nav.setTab(t.id)}>
-                <Icon name={t.icon} size={24} />
+                <span className="tab-ico"><Icon name={t.icon} size={22} /></span>
                 {t.label}
               </button>
             ))}
