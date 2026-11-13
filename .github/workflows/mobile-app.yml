@@ -1,0 +1,21 @@
+# 모바일 앱(PWA) 타입 검사 · 단위 테스트 · 빌드
+name: mobile-app
+on:
+  push:
+    paths: ['mobile-app/**', '.github/workflows/mobile-app.yml']
+  pull_request:
+    paths: ['mobile-app/**']
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: mobile-app } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: npm, cache-dependency-path: mobile-app/package-lock.json }
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with: { name: mungroad-mobile-dist, path: mobile-app/dist }
